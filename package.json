@@ -1,0 +1,22 @@
+{
+  "name": "tail.io",
+  "description": "tail standard input and broadcast it using socket.io",
+  "version": "0.0.1",
+  "author": "Kazuyuki Honda <hakobera@gmail.com>",
+  "dependencies": {
+    "connect": "1.x",
+    "commander": "0.5.x",
+    "socket.io": "0.8.x",
+    "data-section": "0.2.1",
+    "ansispan": "0.0.2"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*"
+  },
+  "main": "index",
+  "bin": {
+    "tailio": "./bin/tailio"
+  },
+  "engines": { "node": ">= 0.6.0 < 0.7.0" }
+}

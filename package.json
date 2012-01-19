@@ -3,6 +3,11 @@
   "description": "tail standard input and broadcast it using socket.io",
   "version": "0.0.1",
   "author": "Kazuyuki Honda <hakobera@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hakobera/tail.io.git"
+  },
+  "keyword": ["tail", "stdin"],
   "dependencies": {
     "connect": "1.x",
     "commander": "0.5.x",

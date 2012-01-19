@@ -29,8 +29,21 @@ function start(port) {
   });
 
   var io = sio.listen(server);
-  io.sockets.on('connection', function(socket) {
 
+  var reader = null;
+  io.sockets.on('connection', function(socket) {
+    if (!reader) {
+      reader = new tailio.LineReader();
+
+      reader.on('line', function(line) {
+        io.sockets.emit('data', ansispan(line));
+      }).on('close', function() {
+        console.log('stream end');
+      }).on('error', function(err) {
+        abort(err.message);
+      });
+      reader.read(process.stdin);
+    }
   });
 
   server.listen(port, function() {
@@ -44,17 +57,6 @@ function start(port) {
         }
       });
     }
-
-    var reader = new tailio.LineReader();
-    reader.on('line', function(line) {
-      io.sockets.emit('data', ansispan(line));
-    }).on('close', function() {
-      console.log('end');
-      process.exit(0);
-    }).on('error', function(err) {
-      abort(err.message);
-    });
-    reader.read(process.stdin);
   });
 }
 

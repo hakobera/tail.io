@@ -7,7 +7,7 @@ and send it using Socket.IO.
 How to install
 --------------
 
-    npm install tail.io
+    npm install tail.io -g
 
 How to use
 ----------

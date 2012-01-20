@@ -100,7 +100,13 @@ function abort(str) {
 
         console.log(data);
 
-        var _doc = document;
+        var _doc = document,
+            scroll = false;
+
+        if (window.scrollY + _doc.documentElement.clientHeight >= _doc.documentElement.scrollHeight) {
+          scroll = true;
+        }
+
         var div = _doc.createElement('div');
         div.innerHTML = data + '\n';
 
@@ -110,7 +116,7 @@ function abort(str) {
 
         _doc.title = data.replace(/<.*?>/g, '') + ' - tail.io';
 
-        if (window.scrollY + _doc.documentElement.clientHeight >= _doc.documentElement.scrollHeight) {
+        if (scroll) {
           window.scrollTo(0, _doc.body.scrollHeight);
         }
       });

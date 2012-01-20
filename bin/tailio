@@ -11,6 +11,7 @@ var tailio = require('../'),
 program
   .version(tailio.version)
   .option('-c --exec <command>', 'set execute command after server start')
+  .option('-v --verbose', 'enable output verbose log to console')
   .parse(process.argv);
 
 var index = dataSection.getSync('index');
@@ -22,6 +23,10 @@ tailio.emptyPort(function(err, port) {
   start(port);
 });
 
+/**
+ * Start server and listen stdio.
+ * @param {Number} port server port number
+ */
 function start(port) {
   var server = http.createServer(function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -29,6 +34,13 @@ function start(port) {
   });
 
   var io = sio.listen(server);
+  if (!program.verbose) {
+    io.enable('browser client minification');  // send minified client
+    io.enable('browser client etag');          // apply etag caching logic based on version number
+    io.enable('browser client gzip');          // gzip the file
+    io.set('log level', 1);                    // reduce logging
+  }
+  io.set('transports', ['websocket', 'xhr-polling']);
 
   var reader = null;
   io.sockets.on('connection', function(socket) {
@@ -65,7 +77,6 @@ function start(port) {
  *
  * @param {String} str
  */
-
 function abort(str) {
   console.error(str);
   process.exit(1);

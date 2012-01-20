@@ -18,8 +18,8 @@ How to use
 
         -h,  --help           output usage information
         -V,  --version        output the version number
-        -c --exec <command>   set execute command after server start
-        -v --verbose          enable output verbose log to console
+        -c,  --exec <command> set execute command after server start
+        -v,  --verbose        enable output verbose log to console
 
 Use tailio command with pipe.
 

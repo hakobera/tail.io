@@ -11,17 +11,22 @@ var tailio = require('../'),
 program
   .version(tailio.version)
   .option('-c, --exec <command>', 'set execute command after server start')
+  .option('-p, --port <port>', 'set server port number')
   .option('-v, --verbose', 'enable output verbose log to console')
   .parse(process.argv);
 
 var index = dataSection.getSync('index');
 
-tailio.emptyPort(function(err, port) {
-  if (err) {
-    abort(err.message);
-  }
-  start(port);
-});
+if (program.port) {
+  start(program.port);
+} else {
+  tailio.emptyPort(function(err, port) {
+    if (err) {
+      abort(err.message);
+    }
+    start(port);
+  });
+}
 
 /**
  * Start server and listen stdio.

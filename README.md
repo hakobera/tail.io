@@ -21,6 +21,7 @@ How to use
         -c, --exec <command> set execute command after server start
         -p, --port <port>    set server port number
         -v, --verbose        enable output verbose log to console
+        -n, --lines <K>       output the last K lines
 
 Use tailio command with pipe.
 

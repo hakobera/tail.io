@@ -114,8 +114,6 @@ function abort(str) {
            return;
         }
 
-        console.log(data);
-
         var _doc = document,
             scroll = false;
 

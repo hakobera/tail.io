@@ -13,9 +13,10 @@ program
   .option('-c, --exec <command>', 'set execute command after server start')
   .option('-p, --port <port>', 'set server port number')
   .option('-v, --verbose', 'enable output verbose log to console')
+  .option('-n, --lines <K>', 'output the last K lines', "30")
   .parse(process.argv);
 
-var index = dataSection.getSync('index');
+var index = dataSection.getSync('index').replace("${MAX_LOG_LINES}", program.lines);
 
 if (program.port) {
   start(program.port);
@@ -98,12 +99,20 @@ function abort(str) {
     window.onload = function() {
       var out = document.getElementById('out');
       var socket = io.connect();
+      var logsize = 0;
+      var logcapfunc = function(msgs) {
+        if (logsize <= ${MAX_LOG_LINES}) {
+          return;
+        }
+        msgs.removeChild(msgs.childNodes.item(0));
+        --logsize;
+        logcapfunc(msgs);
+      }
+
       socket.on('data', function(data) {
         if (!data) {
            return;
         }
-
-        console.log(data);
 
         var _doc = document,
             scroll = false;
@@ -111,6 +120,9 @@ function abort(str) {
         if (window.scrollY + _doc.documentElement.clientHeight >= _doc.documentElement.scrollHeight) {
           scroll = true;
         }
+
+        ++logsize;
+        logcapfunc(out);
 
         var div = _doc.createElement('div');
         div.innerHTML = data + '\n';

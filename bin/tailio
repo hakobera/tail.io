@@ -6,17 +6,20 @@ var tailio = require('../'),
     exec = require('child_process').exec,
     sio = require('socket.io'),
     dataSection = require('data-section'),
-    ansispan = require('ansispan');
+    ansispan = require('ansispan'),
+    httpAuth = require('http-auth');
 
 program
   .version(tailio.version)
   .option('-c, --exec <command>', 'set execute command after server start')
   .option('-p, --port <port>', 'set server port number')
   .option('-v, --verbose', 'enable output verbose log to console')
-  .option('-n, --lines <K>', 'output the last K lines', "30")
+  .option('-n, --lines <K>', 'output the last K lines', "100")
+  .option('-a, --auth <user:pass>', 'use basic authentication user:pass(e.g. --auth tailer:123456)')
+  .option('-u, --parser <file>', 'use user definition line parser. parse before broadcast (file content: exports.parse = function(line){return ...;})')
   .parse(process.argv);
 
-var index = dataSection.getSync('index').replace("${MAX_LOG_LINES}", program.lines);
+var index = dataSection.getSync('index').replace("${MAX_LINES}", program.lines);
 
 if (program.port) {
   start(program.port);
@@ -34,9 +37,37 @@ if (program.port) {
  * @param {Number} port server port number
  */
 function start(port) {
+  var auth;
+  if (program.auth) {
+    auth = httpAuth({
+      authRealm : "Private area.",
+      authList : [program.auth]
+    });
+    console.log('use basic auth. ' + program.auth);
+  } else {
+    auth = {
+      apply: function(req, res, func) {
+        func(req, res);
+      }
+    };
+  }
+  var parser;
+  if (program.parser) {
+    parser = require(program.parser);
+    console.log('use user definition line parser. ' + program.parser);
+  } else {
+    parser = {
+      parse: function(line) {
+        return line;
+      }
+    };
+  }
+
   var server = http.createServer(function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(index);
+    auth.apply(req, res, function() {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.end(index);
+    });
   });
 
   var io = sio.listen(server);
@@ -54,7 +85,11 @@ function start(port) {
       reader = new tailio.LineReader();
 
       reader.on('line', function(line) {
-        io.sockets.emit('data', ansispan(line));
+        var msg = parser.parse(line); 
+        if (!msg) {
+          return;
+        }
+        io.sockets.emit('data', ansispan(msg));
       }).on('close', function() {
         console.log('stream end');
       }).on('error', function(err) {
@@ -99,14 +134,15 @@ function abort(str) {
     window.onload = function() {
       var out = document.getElementById('out');
       var socket = io.connect();
-      var logsize = 0;
-      var logcapfunc = function(msgs) {
-        if (logsize <= ${MAX_LOG_LINES}) {
+      var lineLength = 0;
+
+      var capFunc = function(lines) {
+        if (lineLength <= ${MAX_LINES}) {
           return;
         }
-        msgs.removeChild(msgs.childNodes.item(0));
-        --logsize;
-        logcapfunc(msgs);
+        lines.removeChild(lines.childNodes.item(0));
+        --lineLength;
+        capFunc(lines);
       }
 
       socket.on('data', function(data) {
@@ -121,8 +157,8 @@ function abort(str) {
           scroll = true;
         }
 
-        ++logsize;
-        logcapfunc(out);
+        ++lineLength;
+        capFunc(out);
 
         var div = _doc.createElement('div');
         div.innerHTML = data + '\n';
@@ -144,4 +180,5 @@ function abort(str) {
   <pre id="out"></pre>
 </body>
 </html>
-__DATA__*/
+__DATA__*/  
+

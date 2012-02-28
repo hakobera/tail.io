@@ -13,7 +13,8 @@
     "commander": "0.5.x",
     "socket.io": "0.8.x",
     "data-section": "0.2.1",
-    "ansispan": "0.0.2"
+    "ansispan": "0.0.2",
+    "http-auth": "1.1.9"
   },
   "devDependencies": {
     "mocha": "*",
